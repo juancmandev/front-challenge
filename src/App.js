@@ -7,7 +7,6 @@ const App = () => {
 
   const addMoveable = () => {
     // Create a new moveable component and add it to the array
-    const COLORS = ['red', 'blue', 'yellow', 'green', 'purple'];
 
     setMoveableComponents([
       ...moveableComponents,
@@ -17,10 +16,16 @@ const App = () => {
         left: 0,
         width: 100,
         height: 100,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
         updateEnd: true,
       },
     ]);
+  };
+
+  const removeMoveable = () => {
+    const newArray =
+      moveableComponents.length === 1 ? [] : moveableComponents.splice(-1);
+
+    setMoveableComponents(newArray);
   };
 
   const updateMoveable = (id, newComponent, updateEnd = false) => {
@@ -34,7 +39,6 @@ const App = () => {
   };
 
   const handleResizeStart = (index, e) => {
-    console.log('e', e.direction);
     // Check if the resize is coming from the left handle
     const [handlePosX, handlePosY] = e.direction;
     // 0 => center
@@ -45,7 +49,6 @@ const App = () => {
     // -1, 0
     // -1, 1
     if (handlePosX === -1) {
-      console.log('width', moveableComponents, e);
       // Save the initial left and width values of the moveable component
       const initialLeft = e.left;
       const initialWidth = e.width;
@@ -56,7 +59,8 @@ const App = () => {
 
   return (
     <main style={{ height: '100vh', width: '100vw' }}>
-      <button onClick={addMoveable}>Add Moveable1</button>
+      <button onClick={addMoveable}>Add Moveable</button>
+      <button onClick={removeMoveable}>Remove Moveable</button>
       <div
         id='parent'
         style={{
@@ -96,6 +100,35 @@ const Component = ({
   updateEnd,
 }) => {
   const ref = useRef();
+
+  const [images, setImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState('');
+
+  useEffect(() => {
+    getImages();
+  }, []);
+
+  useEffect(() => {
+    if (images) {
+      selectRandomImage();
+    }
+  }, [images]);
+
+  const getImages = async () => {
+    const response = await fetch('https://jsonplaceholder.typicode.com/photos');
+    const data = await response.json();
+
+    setImages(data);
+  };
+
+  const selectRandomImage = () => {
+    const randomNumber = Math.floor(
+      Math.random() * (images.length - 0 + 1) + 0
+    );
+    const selectedImage = images[randomNumber]?.url;
+
+    setSelectedImage(selectedImage);
+  };
 
   const [nodoReferencia, setNodoReferencia] = useState({
     top,
@@ -137,14 +170,10 @@ const Component = ({
     ref.current.style.width = `${e.width}px`;
     ref.current.style.height = `${e.height}px`;
 
-    console.log(beforeTranslate);
-
     let translateX = beforeTranslate[0];
     let translateY = beforeTranslate[1];
 
     ref.current.style.transform = `translate(${translateX}px, ${translateY}px)`;
-
-    console.log(translateX);
 
     setNodoReferencia({
       ...nodoReferencia,
@@ -199,7 +228,7 @@ const Component = ({
           left: left,
           width: width,
           height: height,
-          backgroundImage: 'url(https://via.placeholder.com/600/92c952)',
+          backgroundImage: `url(${selectedImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -217,7 +246,6 @@ const Component = ({
             left: e.left,
             width,
             height,
-            color,
           });
         }}
         onResize={onResize}

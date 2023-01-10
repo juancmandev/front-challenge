@@ -199,7 +199,10 @@ const Component = ({
           left: left,
           width: width,
           height: height,
-          background: color,
+          backgroundImage: 'url(https://via.placeholder.com/600/92c952)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
         }}
         onClick={() => setSelected(id)}
       />
